@@ -99,14 +99,12 @@ class CPU:
         while running:
             IR = self.ram[self.pc]
             self.branchtable[IR]()
-            print(self.reg)
             
     def handle_halt(self):
         sys.exit()
     
     def handle_print(self):
         operand_a = self.ram_read(self.pc+1)
-        print(operand_a)
         self.pc += 2
         print(self.reg[operand_a])
 
@@ -130,6 +128,12 @@ class CPU:
         self.pc += 2
 
     def handle_pop(self):
-        pass
+        
+        reg = self.ram_read(self.pc+1)
+        val =  self.ram[self.reg[self.sp]]
 
+        self.reg[reg] = val
+        self.reg[self.sp] += 1
+
+        self.pc += 2
 
