@@ -6,6 +6,8 @@ LDI = 130
 MUL = 162
 PRN = 71
 HLT = 1
+PUSH = 69
+POP = 70
 
 class CPU:
     """Main CPU class."""
@@ -15,12 +17,16 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.sp = 7
 
         self.branchtable = {}
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[MUL] = self.handle_mul
         self.branchtable[PRN] = self.handle_print
         self.branchtable[HLT] = self.handle_halt
+        self.branchtable[PUSH] = self.handle_push
+        self.branchtable[POP] = self.handle_pop
+
 
 
     def ram_read(self, address):
@@ -89,16 +95,18 @@ class CPU:
     def run(self):
         """Run the CPU."""
         running = True
-        
+
         while running:
             IR = self.ram[self.pc]
             self.branchtable[IR]()
+            print(self.reg)
             
     def handle_halt(self):
         sys.exit()
     
     def handle_print(self):
         operand_a = self.ram_read(self.pc+1)
+        print(operand_a)
         self.pc += 2
         print(self.reg[operand_a])
 
@@ -113,5 +121,15 @@ class CPU:
         operand_b = self.ram_read(self.pc+2)
         self.reg[operand_a] = operand_b
         self.pc += 3
+    def handle_push(self):
+        
+        reg = self.ram_read(self.pc+1)
+        val = self.reg[reg]
+        self.reg[self.sp] -= 1
+        self.ram[self.reg[self.sp]] = val
+        self.pc += 2
+
+    def handle_pop(self):
+        pass
 
 
