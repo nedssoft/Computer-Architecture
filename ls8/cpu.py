@@ -2,12 +2,38 @@
 
 import sys
 
+LDI = 130
+MUL = 162
+PRN = 71
+HLT = 1
+PUSH = 69
+POP = 70
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
+        self.sp = 7
+
+        self.branchtable = {}
+        self.branchtable[LDI] = self.handle_ldi
+        self.branchtable[MUL] = self.handle_mul
+        self.branchtable[PRN] = self.handle_print
+        self.branchtable[HLT] = self.handle_halt
+        self.branchtable[PUSH] = self.handle_push
+        self.branchtable[POP] = self.handle_pop
+
+
+
+    def ram_read(self, address):
+        return self.ram[address]
+
+    def ram_write(self, address, value):
+        self.ram[address] = value
 
     def load(self):
         """Load a program into memory."""
@@ -15,20 +41,24 @@ class CPU:
         address = 0
 
         # For now, we've just hardcoded a program:
+       
+        if (len(sys.argv) != 2):
+            print('Missing input file') 
+            sys.exit(1)  
+        try:
+            with open(sys.argv[1]) as f:
+                for line in f:
+                    instruction_value = line.split('#')[0].strip()
+                    
+                    if instruction_value:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+                        num = int(instruction_value, 2)
+                        self.ram[address] = num
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                        address += 1
+        except FileNotFoundError:
+            print('File not found')
+            sys.exit(1)
 
 
     def alu(self, op, reg_a, reg_b):
@@ -37,6 +67,8 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        if op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -62,4 +94,46 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        running = True
+
+        while running:
+            IR = self.ram[self.pc]
+            self.branchtable[IR]()
+            
+    def handle_halt(self):
+        sys.exit()
+    
+    def handle_print(self):
+        operand_a = self.ram_read(self.pc+1)
+        self.pc += 2
+        print(self.reg[operand_a])
+
+    def handle_mul(self):
+        operand_a = self.ram_read(self.pc+1)
+        operand_b = self.ram_read(self.pc+2)
+        self.alu('MUL', operand_a, operand_b)
+        self.pc += 3
+
+    def handle_ldi(self):
+        operand_a = self.ram_read(self.pc+1)
+        operand_b = self.ram_read(self.pc+2)
+        self.reg[operand_a] = operand_b
+        self.pc += 3
+    def handle_push(self):
+        
+        reg = self.ram_read(self.pc+1)
+        val = self.reg[reg]
+        self.reg[self.sp] -= 1
+        self.ram[self.reg[self.sp]] = val
+        self.pc += 2
+
+    def handle_pop(self):
+        
+        reg = self.ram_read(self.pc+1)
+        val =  self.ram[self.reg[self.sp]]
+
+        self.reg[reg] = val
+        self.reg[self.sp] += 1
+
+        self.pc += 2
+

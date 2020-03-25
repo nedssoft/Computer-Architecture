@@ -105,16 +105,13 @@ value of the stack pointer.
 
 ## Step 3: Implement the core of `CPU`'s `run()` method
 
-This is the workhorse function of the entire processor. It's the most difficult
-part to write.
+This is the workhorse function of the entire processor. It's the most difficult part to write.
 
 It needs to read the memory address that's stored in register `PC`, and store
 that result in `IR`, the _Instruction Register_. This can just be a local
 variable in `run()`.
 
-Some instructions requires up to the next two bytes of data _after_ the `PC` in
-memory to perform operations on. Sometimes the byte value is a register number,
-other times it's a constant value (in the case of `LDI`). Using `ram_read()`,
+Some instructions requires up to the next two bytes of data _after_ the `PC` in memory to perform operations on. Sometimes the byte value is a register number,other times it's a constant value (in the case of `LDI`). Using `ram_read()`,
 read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and
 `operand_b` in case the instruction needs them.
 
