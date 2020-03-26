@@ -26,10 +26,12 @@ class CPU:
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[MUL] = self.handle_mul
         self.branchtable[PRN] = self.handle_print
-        self.branchtable[HLT] = self.handle_haltgac "Implement"
+        self.branchtable[HLT] = self.handle_halt
         self.branchtable[PUSH] =self.handle_push
         self.branchtable[POP] = self.handle_pop
         self.branchtable[ADD] = self.handle_add
+        self.branchtable[CALL] = self.handle_call
+        self.branchtable[RET] = self.handle_ret
 
 
     def ram_read(self, address):
@@ -150,3 +152,13 @@ class CPU:
         self.alu('ADD', operand_a, operand_b)
         self.pc += 3
 
+    def handle_call(self):
+         # setup
+        reg = self.ram_read(self.pc +1)
+        # CALL
+        self.reg[self.sp] -= 1 # decrement sp
+        self.ram_write(self.reg[self.sp], self.pc+2) # push pc + 2 on to the stack
+
+        # set pc to subroutine
+        self.pc = self.reg[reg]
+      
