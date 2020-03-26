@@ -8,6 +8,9 @@ PRN = 71
 HLT = 1
 PUSH = 69
 POP = 70
+ADD = 160
+CALL = 80
+RET = 17
 
 class CPU:
     """Main CPU class."""
@@ -23,10 +26,10 @@ class CPU:
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[MUL] = self.handle_mul
         self.branchtable[PRN] = self.handle_print
-        self.branchtable[HLT] = self.handle_halt
-        self.branchtable[PUSH] = self.handle_push
+        self.branchtable[HLT] = self.handle_haltgac "Implement"
+        self.branchtable[PUSH] =self.handle_push
         self.branchtable[POP] = self.handle_pop
-
+        self.branchtable[ADD] = self.handle_add
 
 
     def ram_read(self, address):
@@ -98,7 +101,11 @@ class CPU:
 
         while running:
             IR = self.ram[self.pc]
-            self.branchtable[IR]()
+            try:
+                if IR in self.branchtable:
+                    self.branchtable[IR]()
+            except ValueError:
+                print(f'Invalid Opcode {hex(IR)}')
             
     def handle_halt(self):
         sys.exit()
@@ -119,6 +126,7 @@ class CPU:
         operand_b = self.ram_read(self.pc+2)
         self.reg[operand_a] = operand_b
         self.pc += 3
+
     def handle_push(self):
         
         reg = self.ram_read(self.pc+1)
@@ -130,10 +138,15 @@ class CPU:
     def handle_pop(self):
         
         reg = self.ram_read(self.pc+1)
-        val =  self.ram[self.reg[self.sp]]
+        val =  self.ram_read(self.reg[self.sp])
 
         self.reg[reg] = val
         self.reg[self.sp] += 1
 
         self.pc += 2
+    def handle_add(self):
+        operand_a = self.ram_read(self.pc+1)
+        operand_b = self.ram_read(self.pc+2)
+        self.alu('ADD', operand_a, operand_b)
+        self.pc += 3
 
