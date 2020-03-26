@@ -68,11 +68,11 @@ class CPU:
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
+        print('ALU', op, reg_a, reg_b)
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
-        if op == "MUL":
+        elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
@@ -158,7 +158,8 @@ class CPU:
         # CALL
         self.reg[self.sp] -= 1 # decrement sp
         self.ram_write(self.reg[self.sp], self.pc+2) # push pc + 2 on to the stack
-
         # set pc to subroutine
         self.pc = self.reg[reg]
-      
+    def handle_ret(self):
+        self.pc = self.ram_read(self.reg[self.sp])
+        self.reg[self.sp] += 1
